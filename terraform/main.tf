@@ -10,6 +10,7 @@ provider "libvirt" {
   uri = "qemu:///system"
 }
 
+# Ubuntu Server Image
 
 resource "libvirt_volume" "ubuntu-qcow2" {
   name   = "ubuntu.qcow2"
@@ -17,6 +18,28 @@ resource "libvirt_volume" "ubuntu-qcow2" {
   source = "https://cloud-images.ubuntu.com/releases/22.04/release-20240126/ubuntu-22.04-server-cloudimg-amd64.img"
   format = "qcow2"
 }
+
+# --- SSH Key Generation ---
+resource "tls_private_key" "local_keys" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "local_file" "public_key" {
+  content     = tls_private_key.local_keys.public_key_openssh
+  filename    = "${path.module}/ssh_keys/id_rsa.pub"
+  file_permission = "0644"
+}
+
+resource "local_file" "private_key" {
+  content     = tls_private_key.local_keys.private_key_pem
+  filename    = "${path.module}/ssh_keys/id_rsa"
+  file_permission = "0600"
+}
+
+# ----------------------------------------------------------------
+
+
 
 resource "libvirt_volume" "vm-disk" {
   count  = 6
@@ -77,9 +100,10 @@ resource "libvirt_cloudinit_disk" "commoninit" {
               password: ubuntu
               chpasswd: { expire: False }
               ssh_pwauth: True
+              ssh_authorized_keys:
+                - "${tls_private_key.local_keys.public_key_openssh}"
               EOF
 }
-
 
 resource "libvirt_cloudinit_disk" "postgresinit" {
   name    = "postgres-vm-cloudinit.iso"
@@ -89,8 +113,11 @@ resource "libvirt_cloudinit_disk" "postgresinit" {
               password: postgres
               chpasswd: { expire: False }
               ssh_pwauth: True
+              ssh_authorized_keys:
+                - "${tls_private_key.local_keys.public_key_openssh}"
               EOF
 }
+
 
 
 output "ips" {
