@@ -19,23 +19,28 @@ resource "libvirt_volume" "ubuntu-qcow2" {
   format = "qcow2"
 }
 
-# --- SSH Key Generation ---
-resource "tls_private_key" "local_keys" {
+resource "tls_private_key" "workstation_keys" {
+  count     = 6
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
-resource "local_file" "public_key" {
-  content     = tls_private_key.local_keys.public_key_openssh
-  filename    = "${path.module}/ssh_keys/id_rsa.pub"
+
+resource "local_file" "workstation_public_keys" {
+  count          = 6
+  content        = tls_private_key.workstation_keys[count.index].public_key_openssh
+  filename       = "${path.module}/ssh_keys/workstations/id_rsa${count.index}.pub"
   file_permission = "0644"
 }
 
-resource "local_file" "private_key" {
-  content     = tls_private_key.local_keys.private_key_pem
-  filename    = "${path.module}/ssh_keys/id_rsa"
+resource "local_file" "workstation_private_keys" {
+  count          = 6
+  content        = tls_private_key.workstation_keys[count.index].private_key_pem
+  filename       = "${path.module}/ssh_keys/workstations/id_rsa${count.index}"
   file_permission = "0600"
 }
+
+
 
 # ----------------------------------------------------------------
 
@@ -49,18 +54,11 @@ resource "libvirt_volume" "vm-disk" {
   base_volume_id = libvirt_volume.ubuntu-qcow2.id
 }
 
-resource "libvirt_volume" "postgres-vm-disk" {
-  name   = "postgres-vm-disk.qcow2"
-  pool   = "default"
-  format = "qcow2"
-  base_volume_id = libvirt_volume.ubuntu-qcow2.id
-}
-
 resource "libvirt_domain" "vm" {
   count  = 6
-  name   = "ubuntu-vm-${count.index}"
-  memory = "1024"
-  vcpu   = 1
+  name   = "ubuntu-workstation${count.index}"
+  memory = "4096"
+  vcpu   = 2
 
   network_interface {
     network_name = "ubuntuVMnetwork"
@@ -73,54 +71,36 @@ resource "libvirt_domain" "vm" {
   cloudinit = libvirt_cloudinit_disk.commoninit[count.index].id
 }
 
-resource "libvirt_domain" "postgres-vm" {
-  name   = "postgres-ubuntu-vm"
-  memory = "1024"
-  vcpu   = 1
-
-  network_interface {
-    network_name = "ubuntuVMnetwork"
-  }
-
-  disk {
-    volume_id = libvirt_volume.postgres-vm-disk.id
-  }
-
-  cloudinit = libvirt_cloudinit_disk.postgresinit.id
-}
-
-
-
 resource "libvirt_cloudinit_disk" "commoninit" {
   count = 6
   name  = "commoninit-${count.index}.iso"
   pool  = "default"
   user_data = <<-EOF
               #cloud-config
-              password: ubuntu
-              chpasswd: { expire: False }
-              ssh_pwauth: True
-              ssh_authorized_keys:
-                - "${tls_private_key.local_keys.public_key_openssh}"
+              hostname: ubuntu-workstation${count.index}
+              fqdn: ubuntu-workstation${count.index}.example.com
+              users:
+                - name: root
+                  ssh-authorized-keys:
+                    - "${tls_private_key.workstation_keys[count.index].public_key_openssh}"
+                  sudo: ['ALL=(ALL) NOPASSWD:ALL']
+                  shell: /bin/bash
+              write_files:
+                - path: /etc/netplan/01-netcfg.yaml
+                  content: |
+                    network:
+                      version: 2
+                      renderer: networkd
+                      ethernets:
+                        ens3:
+                          dhcp4: no
+                          dhcp6: no
+                          addresses:
+                            - 192.168.100.1${count.index}/24
+                          gateway4: 192.168.100.1
+                          nameservers:
+                            addresses: [8.8.8.8, 8.8.4.4]
+              runcmd:
+                - netplan apply
               EOF
 }
-
-resource "libvirt_cloudinit_disk" "postgresinit" {
-  name    = "postgres-vm-cloudinit.iso"
-  pool    = "default"
-  user_data = <<-EOF
-              #cloud-config
-              password: postgres
-              chpasswd: { expire: False }
-              ssh_pwauth: True
-              ssh_authorized_keys:
-                - "${tls_private_key.local_keys.public_key_openssh}"
-              EOF
-}
-
-
-
-output "ips" {
-  value = libvirt_domain.vm.*.network_interface.0.addresses
-}
-
