@@ -28,3 +28,17 @@ terraform/ssh_keys/workstations/id_rsa4.pub
 terraform/ssh_keys/workstations/id_rsa5
 
 terraform/ssh_keys/workstations/id_rsa5.pub
+
+
+# Ignore Terraform state files
+**/terraform.tfstate
+**/terraform.tfstate.*
+**/.terraform*
+
+# Ignore SSH keys
+**/ssh_keys/**
+
+# Additional files/directories to ignore
+# Uncomment or add as needed
+**/bin/
+**/vendor/
