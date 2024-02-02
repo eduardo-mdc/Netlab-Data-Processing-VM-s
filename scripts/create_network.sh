@@ -1,6 +1,16 @@
-
 #!/bin/bash
-# Define network XML configuration
+
+# Check if the network already exists
+if virsh net-list --all | grep -q "ubuntuVMnetwork"; then
+  # Delete the existing network
+  virsh net-destroy ubuntuVMnetwork
+  virsh net-undefine ubuntuVMnetwork
+  echo "Existing network 'ubuntuVMnetwork' deleted."
+fi
+
+rm ubuntuVMnetwork.xml
+
+# Define network XML configuration with NAT
 cat > ubuntuVMnetwork.xml <<EOF
 <network>
   <name>ubuntuVMnetwork</name>
@@ -11,6 +21,11 @@ cat > ubuntuVMnetwork.xml <<EOF
       <range start="192.168.100.50" end="192.168.100.200"/>
     </dhcp>
   </ip>
+  <forward mode="nat">
+    <nat>
+      <port start="1024" end="65535"/>
+    </nat>
+  </forward>
 </network>
 EOF
 
@@ -24,4 +39,4 @@ virsh net-start ubuntuVMnetwork
 virsh net-autostart ubuntuVMnetwork
 
 # Confirm the network is set up
-echo "Network 'ubuntuVMnetwork' has been set up and started."
+echo "Network 'ubuntuVMnetwork' has been set up with NAT and started."
