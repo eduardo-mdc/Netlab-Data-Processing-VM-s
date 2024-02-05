@@ -1,0 +1,62 @@
+- hosts: mysql_server
+  become: true
+  gather_facts: yes 
+
+  vars:
+    ansible_user: root
+    mysql_root_password: yourRootPassword
+
+  tasks:
+    - name: Download the MySQL APT config deb package using wget
+      command: wget -O /tmp/mysql-apt-config.deb https://dev.mysql.com/get/mysql-apt-config_0.8.16-1_all.deb
+      args:
+        creates: /tmp/mysql-apt-config.deb
+
+    - name: Install the MySQL APT config package
+      ansible.builtin.apt:
+        deb: /tmp/mysql-apt-config.deb
+
+    - name: Add the MySQL repository GPG key
+      ansible.builtin.apt_key:
+        url: "https://repo.mysql.com/RPM-GPG-KEY-mysql-2023"
+        state: present
+
+    - name: Update package lists
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install MySQL server
+      ansible.builtin.apt:
+        name: mysql-server
+        state: present
+
+    - name: Start and enable MySQL service
+      systemd:
+        name: mysql
+        state: started
+        enabled: yes
+
+    - name: Verify MySQL service is running
+      systemd:
+        name: mysql
+        state: started
+      register: mysql_service_status
+
+    - name: Report MySQL service status
+      debug:
+        msg: "MySQL service state is {{ mysql_service_status.state }}"
+
+    - name: Install MySQL Python dependencies
+      ansible.builtin.apt:
+        name: python3-pymysql
+        state: present
+
+    - name: Deploy .my.cnf configuration file for MySQL authentication
+      ansible.builtin.template:
+        src: templates/my.cnf.j2
+        dest: /root/.my.cnf
+        owner: "{{ansible_user}}"
+        group: "{{ansible_user}}"
+        mode: '0600'
+
+    

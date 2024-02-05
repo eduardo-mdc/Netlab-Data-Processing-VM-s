@@ -1,0 +1,21 @@
+- name: Run MySQL Setup Script on a Remote Host
+  hosts: mysql_server
+  become: true
+  vars:
+    ansible_user: root
+    remote_script_path: "/tmp/create_databases.sh"
+    mysql_root_password: "yourRootPassword"  # Use Ansible Vault in production to encrypt this
+
+  tasks:
+    - name: Copy MySQL setup script to the remote host
+      ansible.builtin.copy:
+        src: ../scripts/create_databases.sh
+        dest: "{{ remote_script_path }}"
+        mode: '0700'
+
+    - name: Run the MySQL setup script
+      ansible.builtin.shell: "{{ remote_script_path }}"
+      args:
+        executable: /bin/bash
+      environment:
+        MYSQL_ROOT_PASSWORD: "{{ mysql_root_password }}"

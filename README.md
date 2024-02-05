@@ -19,6 +19,12 @@ This project establishes a set of Data Processing VMs within an environment, ena
     - Host machine with Ansible, Terraform, and SSH client installed.
     - Virtualization platform, in this case, libvirt
 
+# 2.1 Installing Ansible Modules
+
+```bash
+ansible-galaxy collection install community.mysql
+```
+
 # 3. Installing Infrastructure Software
  
 ## 3.1. Ansible on Your PC
@@ -105,12 +111,21 @@ ssh -i ssh_keys/workstations/id_rsa0 root@192.168.100.10
 
 # 8. Running Ansible Playbook for VM Configuration
 
+## 8.0 Allow root access through SSH
+
+```bash
+ssh <user>@machine
+sudo nano /etc/ssh/sshd_config
+PermitRootLogin yes
+```
+
 ## 8.1. Configuration Execution:
 
 Run the playbook to configure installed software (e.g., MySQL):
 
 ```bash
-ansible-playbook install_mysql.yml
+ansible-playbook install_mysql.yaml -i iventory -vv -K
+ansible-playbook create_databases.yaml -i iventory -vv -K
 ```
 
 # 9. Additional Notes
