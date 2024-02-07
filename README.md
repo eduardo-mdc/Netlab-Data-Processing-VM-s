@@ -18,6 +18,7 @@ This project establishes a set of Data Processing VMs within an environment, ena
 # 2. Prerequisites
     - Host machine with Ansible, Terraform, and SSH client installed.
     - Virtualization platform, in this case, libvirt
+    - mkisofs Package
 
 # 2.1 Installing Ansible Modules
 
@@ -45,7 +46,7 @@ Windows: Download and install the Terraform CLI from https://www.terraform.io/do
 
 Linux/macOS: Use package manager or download tarball from https://www.terraform.io/downloads.html.
 
-# 4. Creating the Virtual Network
+# 4. Creating the Virtual Network and Storage Pools
 
 ## 4.1. Script Preparation
 
