@@ -15,7 +15,7 @@ provider "libvirt" {
 resource "libvirt_volume" "ubuntu-qcow2" {
   name   = "ubuntu.qcow2"
   pool   = "default"
-  source = "https://cloud-images.ubuntu.com/releases/22.04/release-20240126/ubuntu-22.04-server-cloudimg-amd64.img"
+  source = "/home/eduardo-mdc/Downloads/ubuntu-22.04-server-cloudimg-amd64.img"
   format = "qcow2"
 }
 

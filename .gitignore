@@ -27,6 +27,10 @@ terraform/ssh_keys/workstations/id_rsa4.pub
 
 terraform/ssh_keys/workstations/id_rsa5
 
+scripts/passwords.txt
+
+scripts/hashed_passwords.txt
+
 terraform/ssh_keys/workstations/id_rsa5.pub
 
 

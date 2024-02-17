@@ -1,0 +1,21 @@
+- name: Create users on servers
+  hosts: proc_servers
+  become: true
+  vars:
+    users:
+      - { name: 'lced1', password: '$2b$12$IXJfsc0HayuW/Y.sNotmr.g6fHusH31/fUE5m5hQFIqsCItaA4kMy'}
+      - { name: 'lced2', password: '$2b$12$aKF71ZmdeGz3SwdJcWvltOMoobj3wDoisTbWsj.SdkWhbGEysCH9.'}
+      - { name: 'lced3', password: '$2b$12$pF39kO9gLzSjXKTk7cOSX.1uCijCqOr1kmMj6E6Uf0hV0xRBVyUQG'}
+      - { name: 'lced4', password: '$2b$12$iBdGg7RB1SsBLYEkIqE3Q.Smnb2Xikuxea6RP87x6mvtkvx7gG2U6'}
+      - { name: 'lced5', password: '$2b$12$roFuf39AIeyY1w/.tqhK3ONUkdDBqwyC5H4TYc4UYCi3DlR9uOxWK'}
+      - { name: 'lced6', password: '$2b$12$VBjqPtWEZBQ.qKTjuNcFsOntDZsSqcVjteZLh8enVSCEUo6DTDxjW'}
+
+  tasks:
+    - name: Ensure users are created
+      user:
+        name: "{{ item.name }}"
+        password: "{{ item.password }}"
+        shell: /bin/bash
+        state: present
+      loop: "{{ users }}"
+

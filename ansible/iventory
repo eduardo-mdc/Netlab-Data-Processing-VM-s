@@ -1,2 +1,10 @@
 [mysql_server]
 10.227.243.132
+
+[proc_servers]
+server1 ansible_host=192.168.100.10 ansible_ssh_private_key_file=../terraform/ssh_keys/workstations/id_rsa0
+server2 ansible_host=192.168.100.11 ansible_ssh_private_key_file=../terraform/ssh_keys/workstations/id_rsa1
+server3 ansible_host=192.168.100.12 ansible_ssh_private_key_file=../terraform/ssh_keys/workstations/id_rsa2
+server4 ansible_host=192.168.100.13 ansible_ssh_private_key_file=../terraform/ssh_keys/workstations/id_rsa3
+server5 ansible_host=192.168.100.14 ansible_ssh_private_key_file=../terraform/ssh_keys/workstations/id_rsa4
+server6 ansible_host=192.168.100.15 ansible_ssh_private_key_file=../terraform/ssh_keys/workstations/id_rsa5
