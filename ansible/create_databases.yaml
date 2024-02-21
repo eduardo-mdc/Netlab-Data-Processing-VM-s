@@ -4,7 +4,7 @@
   vars:
     ansible_user: root
     remote_script_path: "/tmp/create_databases.sh"
-    mysql_root_password: "yourRootPassword"  # Use Ansible Vault in production to encrypt this
+    mysql_root_password: "bE97XnZzmF"  # Use Ansible Vault in production to encrypt this
 
   tasks:
     - name: Copy MySQL setup script to the remote host

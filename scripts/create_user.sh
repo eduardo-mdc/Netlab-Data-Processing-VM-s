@@ -10,17 +10,19 @@ declare -A users=(
     ["lced6"]='$2b$12$VBjqPtWEZBQ.qKTjuNcFsOntDZsSqcVjteZLh8enVSCEUo6DTDxjW'
 )
 
-# Loop through all users and create them
+# Loop through all users and create or delete them as necessary
 for user in "${!users[@]}"; do
     password=${users[$user]}
     # Check if the user already exists
     if id "$user" &>/dev/null; then
-        echo "User $user already exists, skipping..."
-    else
-        # Create the user with the specified password and shell
-        useradd -m -s /bin/bash "$user"
-        # Setting the user password
-        echo "$user:$password" | chpasswd -e
-        echo "User $user created successfully."
+        echo "User $user already exists, deleting..."
+        # Delete the user
+        userdel -r "$user"
+        echo "User $user deleted successfully."
     fi
+    # Create the user with the specified password and shell
+    useradd -m -s /bin/bash "$user"
+    # Setting the user password
+    echo "$user:$password" | chpasswd -e
+    echo "User $user created successfully."
 done
